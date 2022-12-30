@@ -1,0 +1,21 @@
+Priority goes from top [highest] to bottom [lowest]
+
+ANTI-SPAM SYSTEM 
+
+Probably make logging with CSV [associate time, date, name gifted, and ip to an email/hnsadr] (and maybe if someone tries to use a hns address and email seperately on the same IP, combine the log to only one entry per IP.)
+optimise fl/flt/names/namesTemp system
+add a file or part of a file that shows the amount of names remaining, so that the program does not have to count every time, causing lag.
+actually see if the transfer was a success rather than just having a static page saying "success"
+Fix on-chain transfers [needs a google 2fa code each time, not sure how we'll do this. if we can generate a google auth code in python, that's great and would solve the problem (but would defeat the point of 2fa, so i doubt it's possible.)]
+Promo codes
+Serve html from static files
+ip ratelimiting
+optimize loading times
+Maybe add a referral system, with a discord bot to give roles in a server based on how many people are invited, or give the info to someone like johnnywu/ and have giveaways?
+CSS
+ads...? probably want some sort of monetization
+hash emails, ips, and hns addresses and check with a hash so we can't see people's details
+get real hosting so we can use port 80
+comment section / feed on right side
+prefix selector
+scan owned domains in account and see if any of them start with "ioni-" or something, automatically put them in names.txt

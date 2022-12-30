@@ -1,0 +1,296 @@
+from typing import Type
+from flask import Flask, redirect, url_for, request, Response, send_from_directory, send_file, jsonify
+from flask_cors import CORS, cross_origin
+from namebase_marketplace.marketplace import *
+from datetime import datetime, date
+from userObject import User
+import random
+import os
+import requests
+import json
+import csv
+app = Flask(__name__, static_url_path='/static')
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+users = []
+with open("newLog.json") as log:
+    #users = json.loads(log)
+    #print(users)
+    pass
+
+@app.before_request
+def block_method():
+  ip = request.environ.get('REMOTE_ADDR')
+  with open('blocked-ips.txt', 'r') as read_obj:
+    for line in read_obj:
+      try:
+        if ip in line:
+          print(str(ip) + " was blocked.")
+          return'''<p>You have been IP banned.</p>'''
+      except TypeError:
+        pass
+
+def create_app():
+  return app
+
+"""k = 1 
+filename = 'names.txt'
+with open(filename) as file:
+  lines = file.read().splitlines()
+
+if len(lines) > k:
+  random_lines = random.sample(lines, k)
+  print("\n".join(random_lines))
+
+  with open(filename, 'w') as output_file:
+      output_file.writelines(line + "\n"
+        for line in lines if line not in random_lines)
+elif lines:
+  print("\n".join(lines))
+  with open(filename, 'wb', 0):
+      pass"""
+
+@cross_origin()
+# allow both GET and POST requests
+@app.route('/', methods=['GET', 'POST'])
+def form_example():
+  # handle the POST request
+  if request.method == 'POST':
+    email = request.form.get('email')
+    hnsAdr = request.form.get('hns')
+    code = request.form.get('code')
+    #logr = open('log.txt' 'r+')
+    log = open('log.txt', 'a+')
+    fl = open('names.txt', 'r+')
+    flt = open('namesTemp.txt', 'w+')
+    addresses_log = open('addressess.txt', 'r+')
+    blocked_ip_list = open('blocked-ips.txt', 'r+')
+
+    names = fl.readlines()
+    print(50 * "-")
+    print(names)
+    log.write(50 * "-" + "\n")
+    now = datetime.now()
+    nTime = now.strftime("%H:%M:%S")
+    today = date.today()
+    nDate = today.strftime("%m/%d/%Y")
+    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    print(nTime + " " + nDate)
+    log.write(nTime + " " + nDate + "\n")
+    print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+    log.write(request.environ.get('HTTP_X_REAL_IP', request.remote_addr + "\n"))
+
+
+    #
+    ### Check if email/address is already used.
+    #
+
+    # Open the file in read only mode
+    with open('addressess.txt', 'r') as read_obj:
+        # Read all lines in the file one by one
+        for line in read_obj:
+            # For each line, check if line contains the string
+            try:
+              if hnsAdr in line:
+                return '''<h1>You can't use the faucet more than once!</h1>'''
+            except TypeError:
+              pass
+            try: 
+              if email in line:
+                return '''<h1>You can't use the faucet more than once!</h1>'''
+            except TypeError:
+              pass
+ 
+    a = 0
+    for x in names:
+      a = a + 1 
+    print(a)
+
+    nameDe = random.randint(0, a) - 1
+    print(nameDe)
+    try:
+      name = names.pop(nameDe)
+    except IndexError:
+      return'''
+      <h1>Sorry, no more names are left! Please try again later.</h1>'''
+    print(name.strip("\n"))
+
+    for x in names:
+      flt.write(x)
+
+    if email == None:
+      #marketplace = Marketplace()
+      #marketplace.transfer_domain_on_chain(name, hnsAdr)
+      #fl.close()
+      #flt.close()
+
+      #os.remove('names.txt')
+      #os.rename('namesTemp.txt', 'names.txt')
+      #log.write(hnsAdr)
+      #print(hnsAdr)
+      #log.close
+
+      # DISABLED
+
+      return '''
+      <h1>Failure!</h1>
+      <h2>Transfers on chain are currently not working, try again later.<h2>'''#.format(name, hnsAdr)
+    elif hnsAdr == None:
+
+        #
+
+        fl.close()
+        flt.close()
+        
+        # Check for temp email usage (Backend)
+        if "mrvpt" in email:
+            addresses_log.write("\n" + email)
+            print(email)
+            blocked_ip_list.write("\n" + ip)
+            print(ip)
+        else:
+            log.write("\n" + str(email))
+            print(email)
+            log.close
+
+            # Sends Name (Backend -f)
+            os.remove('names.txt')
+            os.rename('namesTemp.txt', 'names.txt')
+            headers = {"Accept": "application/json", "Content-Type": "application/json"}
+            cookies = { "namebase-main": "TOKEN" }
+
+            params = {"recipientEmail":email,"senderName":"IoniFaucet","note":"Thank you for using IoniFaucet!"}
+            r = requests.post("https://www.namebase.io/api/gift/" + name.strip("\n"), headers=headers, data=json.dumps(params), cookies=cookies)
+
+            # Logs User (Backend)
+            print(r.json())
+            log.write("{},{},{}".format(name,email,request.environ.get('HTTP_X_REAL_IP', request.remote_addr)))
+            addresses_log.write(email + "\n")
+
+            # Gives output (Frontend)
+            return '''
+            <h1>Success!</h1>
+            <h2>Successfully sent {} to {}!</h2>
+            <h2>Check your email and claim it!<h2>'''.format(name, email)
+    else:
+        # Error Handling (Backend -f)
+        return'''Please input an eMail or HN$ Address!'''
+
+  if request.method == 'GET':
+
+      fl = open('names.txt', 'r+')
+    log = open('log.txt', 'a+')
+
+    names = fl.readlines()
+    print(50 * "-")
+    log.write(50 * "-" + "\n")
+    now = datetime.now()
+    nTime = now.strftime("%H:%M:%S")
+    today = date.today()
+    nDate = today.strftime("%m/%d/%Y")
+    print(nTime + " " + nDate)
+    log.write(nTime + " " + nDate + "\n")
+    print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+    log.write(request.environ.get('HTTP_X_REAL_IP', request.remote_addr) + "\n")
+    a = 0
+    for x in names:
+        a = a + 1
+    fl.close
+
+    log.close()
+    vl = open('addressess.txt', 'r+')
+
+    views = vl.readlines()
+    b = 0
+    for x in views:
+        b = b + 1
+    vl.close
+
+    return '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>IoniFaucet</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="http://localhost:443/static/styles.css">
+        <link rel="icon" type="image/png" href="http://localhost:443/static/logo.png" />
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="http://faucet.ionibyte.com">
+        <meta property="og:title" content="IoniFaucet | Free Handshake Domains">
+        <meta property="og:description" content="IoniFaucet allows anyone to instantly get a free Handshake domain!">
+        <meta property="og:image" content="http:localhost:443/static/logo.png">
+    </head>
+    <body>
+
+        <!--Main Division-->
+        <div class="main">
+            <h1>Welcome to IoniFaucet!</h1>
+
+            <!--Email Form-->
+            <div class="email-form">
+                <form method="POST">
+                    <input type="email" name="email" placeholder="Namebase eMail [instant]">
+                    <input type="text" name="code" placeholder="Code [optional]">
+                    <input id="btn" type="submit" value="Submit">
+                </form>
+            </div>
+            <h2>Don't have a Namebase account? <a href="http://namebase.io/register/zczpfp">Register Now</a></h2>
+
+            <!--HNS Address Form-->
+            <h2>Or use an HNS Address [ Not functioning right now! ]</h2>
+            <div class="address-form">
+                <form method="POST">
+                    <input type="hns" name="hns" placeholder="HNS Address">
+                    <input type="text" name="code" placeholder="Code [optional]">
+                    <input id="btn" type="submit" value="Submit">
+                </form>
+            </div>
+
+            <!--Names Log-->
+            <div class="names-log">
+                <p class="head">Names left: {}</p>
+                <p class="head">Total number of names given away: {}</p>
+            </div>
+
+            <!--Donate-->
+            <div class="donate">
+                <p class="head">Donate:</p>
+                <p>hs1qqjalysl5e5hqz57wkpfv9weuxq8rxgyf9tl4xe</p>
+            </div>
+
+            <!--Contributions-->
+            <div class="contributers">
+                <p class="head">Special thanks to:</p>
+                <p><a href="http://philippe/">philippe/</a> - Donating names and 50 HN$!</p>
+                <p><a href="http://h4ndsh4k/">h4ndsh4k/</a> - Donating names and helping with transfers!</p>
+                <p><a href="http://chickenfilet/">chickenfilet/</a> - Donating over 50 names!</p>
+                <p><a href="http://hash3/">hash3/</a> - Making the site's CSS!</p>
+            </div>
+
+            <!--Makers & Footer-->
+            <div class="makers">
+                <b><p>Also check out: <a href="https://github.com/RunDavidMC/HNS-TOOLS">https://github.com/RunDavidMC/HNS-TOOLS</a></b>
+                <h3>Made by <a href="http://rundavidmc/">RunDavidMC/</a> & <a href="http://kano0403/">Kano0403/</a></h3>
+            </div>
+            <p class="footer-message">Please use responsibly</p>
+        </div>
+    </body>
+    </html>'''.format(a, b)
+
+@app.route('/static/styles.css')
+def send_js():
+  return send_file('static/styles.css')
+
+@app.route('/static/logo.png')
+def logo_send():
+  return send_file('static/logo.png', mimetype="image/png")
+
+@app.route('/static/bg.svg')
+def send_bg():
+  return send_file('static/bg.svg')
+
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=443)
