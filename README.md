@@ -1,3 +1,3 @@
 # IoniFaucet
 
-Created by mainly RunDavidMc/, but with the assistance of Kano0403/!
+Created by mainly RunDavidMC/, but with the assistance of Kano0403/!
