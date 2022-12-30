@@ -1,3 +1,4 @@
+# REPLACE with own list of available names [and delete this line] #
 xn--7h8haaaa702hbabbb
 xn--7h8haaaa76ibabbb594ncaccc
 xn--7h8haaaa94ibabbb825ncaccc
